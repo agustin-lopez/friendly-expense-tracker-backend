@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY,
-    name varchar(50) NOT NULL,
+    name varchar(50) UNIQUE NOT NULL,
     type varchar(20) NOT NULL,
 
     CONSTRAINT CK_CATEGORY_TYPE CHECK (type = 'EXPENSE' OR type = 'INCOME')

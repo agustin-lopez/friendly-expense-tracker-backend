@@ -1,7 +1,9 @@
 package com.lopezinho.friendly_expense_tracker.controller;
 
 import com.lopezinho.friendly_expense_tracker.model.Transaction;
+import com.lopezinho.friendly_expense_tracker.model.User;
 import com.lopezinho.friendly_expense_tracker.service.TransactionService;
+import com.lopezinho.friendly_expense_tracker.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,16 +16,19 @@ import java.util.UUID;
 public class TransactionController {
 
     private final TransactionService transactionService;
+    private final UserService userService;
 
-    public TransactionController(TransactionService transactionService) {
+    public TransactionController(TransactionService transactionService, UserService userService) {
         this.transactionService = transactionService;
+        this.userService = userService;
     }
 
 
     @GetMapping
-    public List<Transaction> findAll(@RequestParam(required = false) UUID userId) {
-        if (userId != null) return transactionService.findByUserId(userId);
-        return transactionService.findAll();
+    public List<Transaction> findAll() {
+        //GET CURRENT AUTHENTICATED USER
+        User currentUser = userService.getCurrentUser();
+        return transactionService.findByUserId(currentUser.getId());
     }
 
     @GetMapping("/{id}")
@@ -35,6 +40,10 @@ public class TransactionController {
 
     @PostMapping
     public ResponseEntity<Transaction> create(@RequestBody Transaction transaction) {
+        //GET CURRENT AUTHENTICATED USER
+        User currentUser = userService.getCurrentUser();
+        //REPLACE USER IN REQUEST BODY
+        transaction.setUser(currentUser);
         Transaction saved = transactionService.save(transaction);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }

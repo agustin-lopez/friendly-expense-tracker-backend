@@ -1,5 +1,6 @@
 package com.lopezinho.friendly_expense_tracker.controller;
 
+import com.lopezinho.friendly_expense_tracker.dto.ChangePasswordRequest;
 import com.lopezinho.friendly_expense_tracker.model.User;
 import com.lopezinho.friendly_expense_tracker.service.UserService;
 import jakarta.persistence.Column;
@@ -36,13 +37,27 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> create(@RequestBody User user) {
-        User saved = userService.save(user);
+        User saved = userService.register(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<User> update(@PathVariable UUID id, @RequestBody User user) {
+        if (!userService.findById(id).isPresent()) return ResponseEntity.notFound().build();
+        user.setId(id);
+        User updated = userService.register(user);
+        return ResponseEntity.ok(updated);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         userService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/password")
+    public ResponseEntity<Void> changePassword(@PathVariable UUID id, @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(id, request.getNewPassword());
         return ResponseEntity.noContent().build();
     }
 
