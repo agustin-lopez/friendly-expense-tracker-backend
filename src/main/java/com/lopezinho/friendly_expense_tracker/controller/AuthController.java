@@ -5,6 +5,7 @@ import com.lopezinho.friendly_expense_tracker.dto.LoginResponse;
 import com.lopezinho.friendly_expense_tracker.model.User;
 import com.lopezinho.friendly_expense_tracker.service.JwtService;
 import com.lopezinho.friendly_expense_tracker.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,12 @@ public class AuthController {
         this.passwordEncoder = passwordEncoder;
     }
 
+
+    @PostMapping("/register")
+    public ResponseEntity<User> register(@RequestBody User user) {
+        User saved = userService.register(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {

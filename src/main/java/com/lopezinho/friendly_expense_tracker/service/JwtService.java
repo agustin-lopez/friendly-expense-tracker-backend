@@ -42,18 +42,6 @@ public class JwtService {
                 .getSubject();
     }
 
-//    public boolean isTokenValid(String token) {
-//        try {
-//            Jwts.parser()
-//                    .verifyWith(getSigningKey())
-//                    .build()
-//                    .parseSignedClaims(token);
-//            return true;
-//        } catch (Exception e) {
-//            return false;
-//        }
-//    }
-
     public boolean isTokenValid(String token) {
         try {
             Jwts.parser()
@@ -62,7 +50,6 @@ public class JwtService {
                     .parseSignedClaims(token);
             return true;
         } catch (Exception e) {
-            System.out.println("Token validation error: " + e.getMessage());
             return false;
         }
     }

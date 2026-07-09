@@ -15,12 +15,11 @@ public class CategoryService {
 
     public CategoryService(CategoryRepository categoryRepository) { this.categoryRepository = categoryRepository; }
 
-    public List<Category> findAll() { return categoryRepository.findAll(); }
+    public List<Category> findByUserId(UUID userId) { return categoryRepository.findByUserId(userId); }
 
     public Optional<Category> findById(UUID id) { return categoryRepository.findById(id); }
 
     public Category save(Category category) { return categoryRepository.save(category); }
 
     public void deleteById(UUID id) { categoryRepository.deleteById(id); }
-
 }

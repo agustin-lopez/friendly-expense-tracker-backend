@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY,
+    user_id uuid NOT NULL REFERENCES users (id),
     name varchar(50) UNIQUE NOT NULL,
     type varchar(20) NOT NULL,
 
@@ -24,5 +25,6 @@ CREATE TABLE IF NOT EXISTS transactions (
     transaction_date date NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories (user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions (user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_category_id ON transactions (category_id);

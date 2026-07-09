@@ -35,12 +35,6 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<User> create(@RequestBody User user) {
-        User saved = userService.register(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<User> update(@PathVariable UUID id, @RequestBody User user) {
         if (!userService.findById(id).isPresent()) return ResponseEntity.notFound().build();

@@ -11,13 +11,16 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @Column(nullable = false, length = 50)
     private String name;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private CategoryType type;
-
 
     public Category() { }
 
@@ -26,6 +29,10 @@ public class Category {
 
     public void setId(UUID id) { this.id = id; }
 
+    public User getUser() { return user; }
+
+    public void setUser(User user) { this.user = user; }
+
     public String getName() { return name; }
 
     public void setName(String name) { this.name = name; }
@@ -33,5 +40,4 @@ public class Category {
     public CategoryType getType() { return type; }
 
     public void setType(CategoryType type) { this.type = type; }
-
 }
