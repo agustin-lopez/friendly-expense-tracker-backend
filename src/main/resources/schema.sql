@@ -10,10 +10,11 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY,
     user_id uuid NOT NULL REFERENCES users (id),
-    name varchar(50) UNIQUE NOT NULL,
+    name varchar(50) NOT NULL,
     type varchar(20) NOT NULL,
 
-    CONSTRAINT CK_CATEGORY_TYPE CHECK (type = 'EXPENSE' OR type = 'INCOME')
+    CONSTRAINT CK_CATEGORY_TYPE CHECK (type = 'EXPENSE' OR type = 'INCOME'),
+    CONSTRAINT CK_UNIQUE_CATEGORY_NAME UNIQUE (user_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS transactions (
