@@ -54,4 +54,10 @@ public class TransactionController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Transaction> update(@PathVariable UUID id, @RequestBody Transaction transaction) {
+        Transaction updated = transactionService.update(id, transaction);
+        return ResponseEntity.ok(updated);
+    }
+
 }

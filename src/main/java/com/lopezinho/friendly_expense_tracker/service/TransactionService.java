@@ -25,4 +25,16 @@ public class TransactionService {
 
     public void deleteById(UUID id) { transactionRepository.deleteById(id); }
 
+    public Transaction update(UUID id, Transaction updatedData) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+
+        transaction.setCategory(updatedData.getCategory());
+        transaction.setAmount(updatedData.getAmount());
+        transaction.setDescription(updatedData.getDescription());
+        transaction.setTransactionDate(updatedData.getTransactionDate());
+
+        return transactionRepository.save(transaction);
+    }
+
 }
