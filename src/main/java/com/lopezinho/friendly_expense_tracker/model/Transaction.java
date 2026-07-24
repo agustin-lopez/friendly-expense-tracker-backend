@@ -5,6 +5,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.DecimalMin;
 
 @Entity
 @Table(name = "transactions")
@@ -18,18 +21,23 @@ public class Transaction {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @NotNull(message = "Category required")
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @NotNull(message = "Amount required")
+    @DecimalMin(value = "0.01", message = "El monto debe ser mayor a cero")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
+    @Size(max = 120, message = "Description is too long!")
     @Column(length = 120)
     private String description;
 
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @NotNull(message = "Date required")
     @Column(name = "transaction_date", nullable = false)
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate transactionDate;
 
     public Transaction() { }

@@ -7,6 +7,7 @@ import com.lopezinho.friendly_expense_tracker.model.Transaction;
 import com.lopezinho.friendly_expense_tracker.model.User;
 import com.lopezinho.friendly_expense_tracker.service.TransactionService;
 import com.lopezinho.friendly_expense_tracker.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -42,10 +43,8 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<Transaction> create(@RequestBody Transaction transaction) {
-        //GET CURRENT AUTHENTICATED USER
+    public ResponseEntity<Transaction> create(@Valid @RequestBody Transaction transaction) {
         User currentUser = userService.getCurrentUser();
-        //REPLACE USER IN REQUEST BODY
         transaction.setUser(currentUser);
         Transaction saved = transactionService.save(transaction);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
@@ -58,7 +57,7 @@ public class TransactionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Transaction> update(@PathVariable UUID id, @RequestBody Transaction transaction) {
+    public ResponseEntity<Transaction> update(@Valid @PathVariable UUID id, @RequestBody Transaction transaction) {
         Transaction updated = transactionService.update(id, transaction);
         return ResponseEntity.ok(updated);
     }
