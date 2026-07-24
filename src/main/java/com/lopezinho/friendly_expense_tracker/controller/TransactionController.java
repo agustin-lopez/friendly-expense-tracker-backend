@@ -1,5 +1,8 @@
 package com.lopezinho.friendly_expense_tracker.controller;
 
+import com.lopezinho.friendly_expense_tracker.dto.CategoryTotalDTO;
+import com.lopezinho.friendly_expense_tracker.dto.PaginatedMonthsDTO;
+import com.lopezinho.friendly_expense_tracker.dto.TransactionSummaryDTO;
 import com.lopezinho.friendly_expense_tracker.model.Transaction;
 import com.lopezinho.friendly_expense_tracker.model.User;
 import com.lopezinho.friendly_expense_tracker.service.TransactionService;
@@ -58,6 +61,28 @@ public class TransactionController {
     public ResponseEntity<Transaction> update(@PathVariable UUID id, @RequestBody Transaction transaction) {
         Transaction updated = transactionService.update(id, transaction);
         return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/summary")
+    public TransactionSummaryDTO getSummary() {
+        User currentUser = userService.getCurrentUser();
+        return transactionService.getSummary(currentUser.getId());
+    }
+
+    @GetMapping("/by-category")
+    public List<CategoryTotalDTO> getByCategory() {
+        User currentUser = userService.getCurrentUser();
+        return transactionService.getExpensesByCategory(currentUser.getId());
+    }
+
+    @GetMapping("/grouped")
+    public PaginatedMonthsDTO getGrouped(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "2") int size,
+            @RequestParam(required = false) String type
+    ) {
+        User currentUser = userService.getCurrentUser();
+        return transactionService.getTransactionsGroupedByMonth(currentUser.getId(), page, size, type);
     }
 
 }
