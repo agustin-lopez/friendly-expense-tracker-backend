@@ -1,6 +1,7 @@
 package com.lopezinho.friendly_expense_tracker.controller;
 
 import com.lopezinho.friendly_expense_tracker.dto.ChangePasswordRequest;
+import com.lopezinho.friendly_expense_tracker.dto.UpdateProfileRequest;
 import com.lopezinho.friendly_expense_tracker.model.User;
 import com.lopezinho.friendly_expense_tracker.service.UserService;
 import jakarta.persistence.Column;
@@ -53,6 +54,18 @@ public class UserController {
     public ResponseEntity<Void> changePassword(@PathVariable UUID id, @RequestBody ChangePasswordRequest request) {
         userService.changePassword(id, request.getNewPassword());
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<User> updateProfile(@RequestBody UpdateProfileRequest request) {
+        User currentUser = userService.getCurrentUser();
+        User updated = userService.updateProfile(currentUser.getId(), request.getName(), request.getEmail());
+        return ResponseEntity.ok(updated);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<User> getMe() {
+        return ResponseEntity.ok(userService.getCurrentUser());
     }
 
 }

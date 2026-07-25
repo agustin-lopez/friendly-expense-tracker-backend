@@ -60,7 +60,7 @@ public class UserService {
 
     public User changePassword(UUID id, String newPassword) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         return userRepository.save(user);
     }
@@ -70,6 +70,14 @@ public class UserService {
     public User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario autenticado no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+    }
+
+    public User updateProfile(UUID id, String name, String email) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setName(name);
+        user.setEmail(email);
+        return userRepository.save(user);
     }
 }
