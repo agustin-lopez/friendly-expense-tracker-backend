@@ -26,6 +26,14 @@ CREATE TABLE IF NOT EXISTS transactions (
     transaction_date date NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id uuid PRIMARY KEY,
+    user_id uuid NOT NULL REFERENCES users (id),
+    token varchar(255) NOT NULL UNIQUE,
+    expires_at timestamp NOT NULL,
+    used boolean NOT NULL DEFAULT false
+    );
+
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories (user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions (user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_category_id ON transactions (category_id);

@@ -1,5 +1,7 @@
 package com.lopezinho.friendly_expense_tracker.controller;
 
+import com.lopezinho.friendly_expense_tracker.dto.ResetPasswordRequest;
+import com.lopezinho.friendly_expense_tracker.dto.ForgotPasswordRequest;
 import com.lopezinho.friendly_expense_tracker.dto.LoginRequest;
 import com.lopezinho.friendly_expense_tracker.dto.LoginResponse;
 import com.lopezinho.friendly_expense_tracker.model.User;
@@ -10,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -49,4 +52,17 @@ public class AuthController {
         String token = jwtService.generateToken(user.getEmail());
         return ResponseEntity.ok(new LoginResponse(token));
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        userService.requestPasswordReset(request.getEmail());
+        return ResponseEntity.ok(Map.of("message", "Recovery email sent successfully"));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody ResetPasswordRequest request) {
+        userService.resetPassword(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok(Map.of("message", "Password updated successfully!"));
+    }
+
 }

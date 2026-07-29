@@ -2,12 +2,16 @@ package com.lopezinho.friendly_expense_tracker.service;
 
 import com.lopezinho.friendly_expense_tracker.model.Category;
 import com.lopezinho.friendly_expense_tracker.model.CategoryType;
+import com.lopezinho.friendly_expense_tracker.model.PasswordResetToken;
 import com.lopezinho.friendly_expense_tracker.model.User;
+import com.lopezinho.friendly_expense_tracker.repository.PasswordResetTokenRepository;
 import com.lopezinho.friendly_expense_tracker.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,11 +22,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CategoryService categoryService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final EmailService emailService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, CategoryService categoryService) {
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, CategoryService categoryService, PasswordResetTokenRepository passwordResetTokenRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.categoryService = categoryService;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.emailService = emailService;
     }
 
 
@@ -79,5 +90,44 @@ public class UserService {
         user.setName(name);
         user.setEmail(email);
         return userRepository.save(user);
+    }
+
+    public void requestPasswordReset(String email) {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+
+        if (userOpt.isEmpty()) {
+            return;
+        }
+
+        User user = userOpt.get();
+
+        PasswordResetToken resetToken = new PasswordResetToken();
+        resetToken.setUser(user);
+        resetToken.setToken(UUID.randomUUID().toString());
+        resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+        passwordResetTokenRepository.save(resetToken);
+
+        String resetLink = frontendUrl + "/reset-password?token=" + resetToken.getToken();
+        emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
+    }
+
+    public void resetPassword(String token, String newPassword) {
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token!"));
+
+        if (resetToken.isUsed()) {
+            throw new RuntimeException("This link was already used!");
+        }
+
+        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("This link is already expired!");
+        }
+
+        User user = resetToken.getUser();
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
     }
 }
