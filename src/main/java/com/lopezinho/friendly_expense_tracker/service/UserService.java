@@ -69,9 +69,12 @@ public class UserService {
         return category;
     }
 
-    public User changePassword(UUID id, String newPassword) {
+    public User changePassword(UUID id, String currentPassword, String newPassword) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) throw new RuntimeException("Wrong password");
+
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         return userRepository.save(user);
     }
