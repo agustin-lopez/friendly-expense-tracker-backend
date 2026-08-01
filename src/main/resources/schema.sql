@@ -12,9 +12,9 @@ CREATE TABLE IF NOT EXISTS categories (
     user_id uuid NOT NULL REFERENCES users (id),
     name varchar(50) NOT NULL,
     type varchar(20) NOT NULL,
-
+    icon varchar(50),
     CONSTRAINT CK_CATEGORY_TYPE CHECK (type = 'EXPENSE' OR type = 'INCOME'),
-    CONSTRAINT CK_UNIQUE_CATEGORY_NAME UNIQUE (user_id, name)
+    CONSTRAINT UQ_CATEGORY_USER_NAME UNIQUE (user_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS transactions (
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     token varchar(255) NOT NULL UNIQUE,
     expires_at timestamp NOT NULL,
     used boolean NOT NULL DEFAULT false
-    );
+);
 
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories (user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions (user_id);

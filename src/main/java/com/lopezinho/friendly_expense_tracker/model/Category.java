@@ -22,6 +22,9 @@ public class Category {
     @Column(nullable = false, length = 20)
     private CategoryType type;
 
+    @Column(length = 50)
+    private String icon;
+
     public Category() { }
 
     //GETTERS / SETTERS
@@ -40,4 +43,8 @@ public class Category {
     public CategoryType getType() { return type; }
 
     public void setType(CategoryType type) { this.type = type; }
+
+    public String getIcon() { return icon; }
+
+    public void setIcon(String icon) { this.icon = icon; }
 }

@@ -52,16 +52,17 @@ public class UserService {
 
     private void createDefaultCategories(User user) {
         List<Category> defaults = List.of(
-                buildCategory("Food", CategoryType.EXPENSE, user),
-                buildCategory("Health", CategoryType.EXPENSE, user),
-                buildCategory("Transportation", CategoryType.EXPENSE, user),
-                buildCategory("Salary", CategoryType.INCOME, user)
+                buildCategory("Food", CategoryType.EXPENSE, "ThreeThousandIcons9", user),
+                buildCategory("Transportation", CategoryType.EXPENSE, "VisualStudioCARS", user),
+                buildCategory("Health", CategoryType.EXPENSE, "WindowsXPHearts", user),
+                buildCategory("Entertainment", CategoryType.EXPENSE, "WindowsXPMyComputer2", user),
+                buildCategory("Salary", CategoryType.INCOME, "BigMoneyDeluxe", user)
         );
 
         defaults.forEach(categoryService::save);
     }
 
-    private Category buildCategory(String name, CategoryType type, User user) {
+    private Category buildCategory(String name, CategoryType type, String icon, User user) {
         Category category = new Category();
         category.setName(name);
         category.setType(type);
@@ -87,11 +88,10 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
     }
 
-    public User updateProfile(UUID id, String name, String email) {
+    public User updateProfile(UUID id, String name) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.setName(name);
-        user.setEmail(email);
         return userRepository.save(user);
     }
 

@@ -59,7 +59,7 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity<User> updateProfile(@RequestBody UpdateProfileRequest request) {
         User currentUser = userService.getCurrentUser();
-        User updated = userService.updateProfile(currentUser.getId(), request.getName(), request.getEmail());
+        User updated = userService.updateProfile(currentUser.getId(), request.getName());
         return ResponseEntity.ok(updated);
     }
 
