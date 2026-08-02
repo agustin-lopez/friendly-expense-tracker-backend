@@ -1,16 +1,12 @@
 package com.lopezinho.friendly_expense_tracker.service;
 
-import com.lopezinho.friendly_expense_tracker.model.Category;
-import com.lopezinho.friendly_expense_tracker.model.CategoryType;
-import com.lopezinho.friendly_expense_tracker.model.PasswordResetToken;
-import com.lopezinho.friendly_expense_tracker.model.User;
-import com.lopezinho.friendly_expense_tracker.repository.PasswordResetTokenRepository;
+import com.lopezinho.friendly_expense_tracker.model.*;
+import com.lopezinho.friendly_expense_tracker.repository.TemporaryTokenRepository;
 import com.lopezinho.friendly_expense_tracker.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -22,17 +18,17 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CategoryService categoryService;
-    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final TemporaryTokenRepository temporaryTokenRepository;
     private final EmailService emailService;
 
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, CategoryService categoryService, PasswordResetTokenRepository passwordResetTokenRepository, EmailService emailService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, CategoryService categoryService, TemporaryTokenRepository temporaryTokenRepository, EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.categoryService = categoryService;
-        this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.temporaryTokenRepository = temporaryTokenRepository;
         this.emailService = emailService;
     }
 
@@ -74,7 +70,7 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) throw new RuntimeException("Wrong password");
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) throw new RuntimeException("That's not your current password. Try again!");
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         return userRepository.save(user);
@@ -97,40 +93,68 @@ public class UserService {
 
     public void requestPasswordReset(String email) {
         Optional<User> userOpt = userRepository.findByEmail(email);
-
-        if (userOpt.isEmpty()) {
-            return;
-        }
+        if (userOpt.isEmpty()) return;
 
         User user = userOpt.get();
-
-        PasswordResetToken resetToken = new PasswordResetToken();
-        resetToken.setUser(user);
-        resetToken.setToken(UUID.randomUUID().toString());
-        resetToken.setExpiresAt(LocalDateTime.now().plusMinutes(15));
-        passwordResetTokenRepository.save(resetToken);
-
-        String resetLink = frontendUrl + "/reset-password?token=" + resetToken.getToken();
+        String resetLink = createToken(user, TokenType.PASSWORD_RESET, 15, "/reset-password");
         emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
     }
 
     public void resetPassword(String token, String newPassword) {
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid token!"));
-
-        if (resetToken.isUsed()) {
-            throw new RuntimeException("This link was already used!");
-        }
-
-        if (resetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("This link is already expired!");
-        }
+        TemporaryToken resetToken = validateToken(token, TokenType.PASSWORD_RESET);
 
         User user = resetToken.getUser();
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        resetToken.setUsed(true);
-        passwordResetTokenRepository.save(resetToken);
+        markTokenAsUsed(resetToken);
+    }
+
+    private void sendVerificationEmail(User user) {
+        String verificationLink = createToken(user, TokenType.EMAIL_VERIFICATION, 30, "/verify-email");
+        emailService.sendVerificationEmail(user.getEmail(), verificationLink);
+    }
+
+    public void verifyEmail(String token) {
+        TemporaryToken verificationToken = validateToken(token, TokenType.EMAIL_VERIFICATION);
+
+        User user = verificationToken.getUser();
+        user.setEmailVerified(true);
+        userRepository.save(user);
+
+        markTokenAsUsed(verificationToken);
+    }
+
+    public void resendVerificationEmail(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (!user.isEmailVerified()) sendVerificationEmail(user);
+        });
+    }
+
+    private String createToken(User user, TokenType type, int expirationMinutes, String frontendPath) {
+        TemporaryToken temporaryToken = new TemporaryToken();
+        temporaryToken.setUser(user);
+        temporaryToken.setType(type);
+        temporaryToken.setToken(UUID.randomUUID().toString());
+        temporaryToken.setExpiresAt(LocalDateTime.now().plusMinutes(expirationMinutes));
+        temporaryTokenRepository.save(temporaryToken);
+
+        return frontendUrl + frontendPath + "?token=" + temporaryToken.getToken();
+    }
+
+    private TemporaryToken validateToken(String token, TokenType expectedType) {
+        TemporaryToken temporaryToken = temporaryTokenRepository.findByTokenAndType(token, expectedType)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        if (temporaryToken.isUsed()) throw new RuntimeException("This link was already used");
+
+        if (temporaryToken.getExpiresAt().isBefore(LocalDateTime.now())) throw new RuntimeException("This link is already expired");
+
+        return temporaryToken;
+    }
+
+    private void markTokenAsUsed(TemporaryToken token) {
+        token.setUsed(true);
+        temporaryTokenRepository.save(token);
     }
 }

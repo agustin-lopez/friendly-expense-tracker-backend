@@ -38,12 +38,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+
         Optional<User> userOpt = userService.findByEmail(request.getEmail());
 
         //NO USER-EMAIL MATCH WAS FOUND: 401
         if (userOpt.isEmpty()) return ResponseEntity.status(401).body("Wrong password/email");
 
         User user = userOpt.get();
+
+        if (!user.isEmailVerified()) return ResponseEntity.status(403).body("This account is not verified yet");
 
         //GIVEN PASSWORD DOES NOT MATCH WITH HASHED PASSWORD: 401
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) { return ResponseEntity.status(401).body("Wrong password/email"); }
@@ -63,6 +66,18 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> resetPassword(@RequestBody ResetPasswordRequest request) {
         userService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok(Map.of("message", "Password updated successfully!"));
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<Map<String, String>> verifyEmail(@RequestBody Map<String, String> body) {
+        userService.verifyEmail(body.get("token"));
+        return ResponseEntity.ok(Map.of("message", "Email verified successfully!"));
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Map<String, String>> resendVerification(@RequestBody ForgotPasswordRequest request) {
+        userService.resendVerificationEmail(request.getEmail());
+        return ResponseEntity.ok(Map.of("message", "A new verification link will be sent to you"));
     }
 
 }

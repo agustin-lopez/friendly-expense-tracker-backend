@@ -1,10 +1,11 @@
 --TABLES
 CREATE TABLE IF NOT EXISTS users (
     id uuid PRIMARY KEY,
-    name varchar(100) NOT NULL,
+    name varchar(40) NOT NULL,
     email varchar(255) NOT NULL UNIQUE,
     password_hash varchar(255) NOT NULL,
-    registration_date date NOT NULL
+    registration_date date NOT NULL,
+    email_verified boolean NOT NULL DEFAULT false
 );
 
 CREATE TABLE IF NOT EXISTS categories (
@@ -26,12 +27,14 @@ CREATE TABLE IF NOT EXISTS transactions (
     transaction_date date NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS password_reset_tokens (
+CREATE TABLE IF NOT EXISTS temporary_tokens (
     id uuid PRIMARY KEY,
     user_id uuid NOT NULL REFERENCES users (id),
     token varchar(255) NOT NULL UNIQUE,
+    type varchar(30) NOT NULL,
     expires_at timestamp NOT NULL,
-    used boolean NOT NULL DEFAULT false
+    used boolean NOT NULL DEFAULT false,
+    CONSTRAINT CK_TOKEN_TYPE CHECK (type = 'PASSWORD_RESET' OR type = 'EMAIL_VERIFICATION')
 );
 
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories (user_id);

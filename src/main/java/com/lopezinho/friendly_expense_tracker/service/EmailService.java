@@ -41,4 +41,27 @@ public class EmailService {
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
         restTemplate.postForEntity("https://api.resend.com/emails", request, String.class);
     }
+
+    public void sendVerificationEmail(String toEmail, String verificationLink) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        String htmlBody = """
+            <h2>Email verificaction</h2>
+            <p>Thank you for signing up!</p>
+            <p><a href="%s">Click this link to activate your account.</a></p>
+            <p>Expires in 30 minutes.</p>
+            """.formatted(verificationLink);
+
+        Map<String, Object> body = Map.of(
+                "from", fromEmail,
+                "to", toEmail,
+                "subject", "Friendly Expense Tracker - Email verification",
+                "html", htmlBody
+        );
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        restTemplate.postForEntity("https://api.resend.com/emails", request, String.class);
+    }
 }

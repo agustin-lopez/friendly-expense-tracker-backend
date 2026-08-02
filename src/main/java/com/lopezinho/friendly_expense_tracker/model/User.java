@@ -30,6 +30,9 @@ public class User {
     @Column(name = "registration_date", nullable = false, updatable = false)
     private LocalDate registrationDate;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
     public User() { }
 
 
@@ -53,5 +56,9 @@ public class User {
     public LocalDate getRegistrationDate() { return registrationDate; }
 
     public void setRegistrationDate(LocalDate  registrationDate) { this.registrationDate = registrationDate; }
+
+    public boolean isEmailVerified() { return emailVerified; }
+
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
 
 }
