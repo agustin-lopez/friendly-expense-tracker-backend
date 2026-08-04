@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS categories (
 CREATE TABLE IF NOT EXISTS transactions (
     id uuid PRIMARY KEY,
     user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    category_id uuid NOT NULL REFERENCES categories (id),
+    category_id uuid REFERENCES categories (id) ON DELETE SET NULL ON UPDATE CASCADE,
     amount decimal(10,2) NOT NULL,
     description varchar(120),
     transaction_date date NOT NULL

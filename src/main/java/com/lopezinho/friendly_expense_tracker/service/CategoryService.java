@@ -22,4 +22,15 @@ public class CategoryService {
     public Category save(Category category) { return categoryRepository.save(category); }
 
     public void deleteById(UUID id) { categoryRepository.deleteById(id); }
+
+    public Category update(UUID id, Category updatedData) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        category.setName(updatedData.getName());
+        category.setType(updatedData.getType());
+        category.setIcon(updatedData.getIcon());
+
+        return categoryRepository.save(category);
+    }
 }

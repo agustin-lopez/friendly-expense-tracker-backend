@@ -21,17 +21,16 @@ public class Transaction {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @NotNull(message = "Category required")
     @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @NotNull(message = "Amount required")
-    @DecimalMin(value = "0.01", message = "El monto debe ser mayor a cero")
+    @DecimalMin(value = "0.01", message = "The amount must me higher than 0")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 
-    @Size(max = 120, message = "Description is too long!")
+    @Size(max = 120, message = "The description is too long")
     @Column(length = 120)
     private String description;
 

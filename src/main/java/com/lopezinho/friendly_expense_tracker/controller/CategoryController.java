@@ -49,4 +49,10 @@ public class CategoryController {
         categoryService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Category> update(@PathVariable UUID id, @RequestBody Category category) {
+        Category updated = categoryService.update(id, category);
+        return ResponseEntity.ok(updated);
+    }
 }
