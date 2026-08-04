@@ -46,6 +46,7 @@ public class AuthController {
 
         User user = userOpt.get();
 
+        //USER NOT VERIFIED
         if (!user.isEmailVerified()) return ResponseEntity.status(403).body("This account is not verified yet");
 
         //GIVEN PASSWORD DOES NOT MATCH WITH HASHED PASSWORD: 401
@@ -77,7 +78,7 @@ public class AuthController {
     @PostMapping("/resend-verification")
     public ResponseEntity<Map<String, String>> resendVerification(@RequestBody ForgotPasswordRequest request) {
         userService.resendVerificationEmail(request.getEmail());
-        return ResponseEntity.ok(Map.of("message", "A new verification link will be sent to you"));
+        return ResponseEntity.ok(Map.of("message", "Si el email existe y no está verificado, te llegará un nuevo link"));
     }
 
 }

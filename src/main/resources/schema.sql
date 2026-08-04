@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS categories (
     id uuid PRIMARY KEY,
-    user_id uuid NOT NULL REFERENCES users (id),
+    user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
     name varchar(50) NOT NULL,
     type varchar(20) NOT NULL,
     icon varchar(50),
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS categories (
 
 CREATE TABLE IF NOT EXISTS transactions (
     id uuid PRIMARY KEY,
-    user_id uuid NOT NULL REFERENCES users (id),
+    user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
     category_id uuid NOT NULL REFERENCES categories (id),
     amount decimal(10,2) NOT NULL,
     description varchar(120),
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 CREATE TABLE IF NOT EXISTS temporary_tokens (
     id uuid PRIMARY KEY,
-    user_id uuid NOT NULL REFERENCES users (id),
+    user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
     token varchar(255) NOT NULL UNIQUE,
     type varchar(30) NOT NULL,
     expires_at timestamp NOT NULL,

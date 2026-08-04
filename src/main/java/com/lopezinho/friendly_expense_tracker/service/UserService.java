@@ -1,5 +1,7 @@
 package com.lopezinho.friendly_expense_tracker.service;
 
+import com.lopezinho.friendly_expense_tracker.exception.ExpiredTokenException;
+import org.springframework.transaction.annotation.Transactional;
 import com.lopezinho.friendly_expense_tracker.model.*;
 import com.lopezinho.friendly_expense_tracker.repository.TemporaryTokenRepository;
 import com.lopezinho.friendly_expense_tracker.repository.UserRepository;
@@ -39,13 +41,15 @@ public class UserService {
 
     public Optional<User> findByEmail(String email) { return userRepository.findByEmail(email); }
 
+    @Transactional
     public User register(User user) {
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+        user.setEmailVerified(false);
         User savedUser = userRepository.save(user);
         createDefaultCategories(savedUser);
+        sendVerificationEmail(savedUser);
         return savedUser;
     }
-
     private void createDefaultCategories(User user) {
         List<Category> defaults = List.of(
                 buildCategory("Food", CategoryType.EXPENSE, "ThreeThousandIcons9", user),
@@ -146,9 +150,11 @@ public class UserService {
         TemporaryToken temporaryToken = temporaryTokenRepository.findByTokenAndType(token, expectedType)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
 
-        if (temporaryToken.isUsed()) throw new RuntimeException("This link was already used");
+        String email = temporaryToken.getUser().getEmail();
 
-        if (temporaryToken.getExpiresAt().isBefore(LocalDateTime.now())) throw new RuntimeException("This link is already expired");
+        if (temporaryToken.isUsed()) throw new ExpiredTokenException("This verification link has already been used", email);
+
+        if (temporaryToken.getExpiresAt().isBefore(LocalDateTime.now())) throw new ExpiredTokenException("This verification link has already expired", email);
 
         return temporaryToken;
     }

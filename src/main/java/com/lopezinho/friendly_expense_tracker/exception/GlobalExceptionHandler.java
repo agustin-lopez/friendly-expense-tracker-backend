@@ -1,12 +1,14 @@
 package com.lopezinho.friendly_expense_tracker.exception;
 
+import com.lopezinho.friendly_expense_tracker.exception.ExpiredTokenException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.RestClientException;
+
 import java.util.LinkedHashMap;
 
 import java.util.Map;
@@ -35,5 +37,22 @@ public class GlobalExceptionHandler {
                 errors.put(fieldError.getField(), fieldError.getDefaultMessage())
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
+    @ExceptionHandler(RestClientException.class)
+    public ResponseEntity<Map<String, String>> handleEmailServiceError(RestClientException ex) {
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Map.of("error", "We can't process your registration at this moment. Please try again later! x.x"));
+    }
+
+    @ExceptionHandler(ExpiredTokenException.class)
+    public ResponseEntity<Map<String, String>> handleExpiredToken(ExpiredTokenException ex) {
+        return ResponseEntity
+                .status(HttpStatus.GONE)
+                .body(Map.of(
+                        "error", ex.getMessage(),
+                        "email", ex.getEmail()
+                ));
     }
 }
