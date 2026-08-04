@@ -47,12 +47,12 @@ public class TransactionService {
         List<Transaction> all = transactionRepository.findByUserId(userId);
 
         BigDecimal income = all.stream()
-                .filter(t -> t.getCategory().getType() == CategoryType.INCOME)
+                .filter(t -> t.getCategory() != null && t.getCategory().getType() == CategoryType.INCOME)
                 .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal expenses = all.stream()
-                .filter(t -> t.getCategory().getType() == CategoryType.EXPENSE)
+                .filter(t -> t.getCategory() != null && t.getCategory().getType() == CategoryType.INCOME)
                 .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -64,7 +64,7 @@ public class TransactionService {
 
         Map<String, BigDecimal> totals = new LinkedHashMap<>();
         all.stream()
-                .filter(t -> t.getCategory().getType() == CategoryType.EXPENSE)
+                .filter(t -> t.getCategory() != null && t.getCategory().getType() == CategoryType.EXPENSE)
                 .forEach(t -> totals.merge(t.getCategory().getName(), t.getAmount(), BigDecimal::add));
 
         return totals.entrySet().stream()
@@ -101,7 +101,7 @@ public class TransactionService {
 
         if (typeFilter != null && !typeFilter.equals("ALL")) {
             transactions = transactions.stream()
-                    .filter(t -> t.getCategory().getType().name().equals(typeFilter))
+                    .filter(t -> t.getCategory() != null && t.getCategory().getType().name().equals(typeFilter))
                     .toList();
         }
 
@@ -109,7 +109,9 @@ public class TransactionService {
         transactions.sort((a, b) -> b.getTransactionDate().compareTo(a.getTransactionDate()));
 
         BigDecimal total = transactions.stream()
-                .map(t -> t.getCategory().getType() == CategoryType.INCOME ? t.getAmount() : t.getAmount().negate())
+                .map(t -> t.getCategory() != null && t.getCategory().getType() == CategoryType.INCOME
+                        ? t.getAmount()
+                        : t.getAmount().negate())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new MonthGroupDTO(monthKey, total, transactions);
