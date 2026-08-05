@@ -59,12 +59,16 @@ public class TransactionService {
         return new TransactionSummaryDTO(income, expenses, income.subtract(expenses));
     }
 
-    public List<CategoryTotalDTO> getExpensesByCategory(UUID userId) {
+    public List<CategoryTotalDTO> getTotalsByCategory(UUID userId, String typeFilter) {
         List<Transaction> all = transactionRepository.findByUserId(userId);
+
+        CategoryType targetType = (typeFilter == null || typeFilter.equals("ALL"))
+                ? CategoryType.EXPENSE
+                : CategoryType.valueOf(typeFilter);
 
         Map<String, BigDecimal> totals = new LinkedHashMap<>();
         all.stream()
-                .filter(t -> t.getCategory() != null && t.getCategory().getType() == CategoryType.EXPENSE)
+                .filter(t -> t.getCategory() != null && t.getCategory().getType() == targetType)
                 .forEach(t -> totals.merge(t.getCategory().getName(), t.getAmount(), BigDecimal::add));
 
         return totals.entrySet().stream()

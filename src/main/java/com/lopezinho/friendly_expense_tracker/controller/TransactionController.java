@@ -68,9 +68,9 @@ public class TransactionController {
     }
 
     @GetMapping("/by-category")
-    public List<CategoryTotalDTO> getByCategory() {
+    public List<CategoryTotalDTO> getByCategory(@RequestParam(required = false) String type) {
         User currentUser = userService.getCurrentUser();
-        return transactionService.getExpensesByCategory(currentUser.getId());
+        return transactionService.getTotalsByCategory(currentUser.getId(), type);
     }
 
     @GetMapping("/grouped")
