@@ -109,7 +109,8 @@ public class TransactionService {
         transactions.sort((a, b) -> b.getTransactionDate().compareTo(a.getTransactionDate()));
 
         BigDecimal total = transactions.stream()
-                .map(t -> t.getCategory() != null && t.getCategory().getType() == CategoryType.INCOME
+                .filter(t -> t.getCategory() != null)
+                .map(t -> t.getCategory().getType() == CategoryType.INCOME
                         ? t.getAmount()
                         : t.getAmount().negate())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
