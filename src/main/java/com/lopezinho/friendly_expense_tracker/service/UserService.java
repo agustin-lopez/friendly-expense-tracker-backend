@@ -52,8 +52,8 @@ public class UserService {
     }
     private void createDefaultCategories(User user) {
         List<Category> defaults = List.of(
-                buildCategory("Food", CategoryType.EXPENSE, "ThreeThousandIcons9", user),
-                buildCategory("Transportation", CategoryType.EXPENSE, "VisualStudioCARS", user),
+                buildCategory("Food", CategoryType.EXPENSE, "PepsiThemeMyComputer", user),
+                buildCategory("Transportation", CategoryType.EXPENSE, "VisualStudioPlane", user),
                 buildCategory("Health", CategoryType.EXPENSE, "WindowsXPHearts", user),
                 buildCategory("Entertainment", CategoryType.EXPENSE, "WindowsXPMyComputer2", user),
                 buildCategory("Salary", CategoryType.INCOME, "BigMoneyDeluxe", user)
