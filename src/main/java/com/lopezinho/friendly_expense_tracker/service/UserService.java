@@ -66,6 +66,7 @@ public class UserService {
         Category category = new Category();
         category.setName(name);
         category.setType(type);
+        category.setIcon(icon);
         category.setUser(user);
         return category;
     }
