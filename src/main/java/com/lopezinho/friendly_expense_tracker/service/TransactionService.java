@@ -52,7 +52,7 @@ public class TransactionService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal expenses = all.stream()
-                .filter(t -> t.getCategory() != null && t.getCategory().getType() == CategoryType.INCOME)
+                .filter(t -> t.getCategory() != null && t.getCategory().getType() == CategoryType.EXPENSE)
                 .map(Transaction::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
