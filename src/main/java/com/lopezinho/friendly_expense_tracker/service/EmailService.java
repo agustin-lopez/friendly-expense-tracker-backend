@@ -7,6 +7,11 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
 import java.util.Map;
 
 @Service
@@ -20,16 +25,20 @@ public class EmailService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    @Autowired
+    private TemplateEngine templateEngine;
+
     public void sendPasswordResetEmail(String toEmail, String resetLink) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
 
-        String htmlBody = """
-                <h2>Password recovery</h2>
-                <p><a href="%s">Click here to set your new password</a></p>
-                <p>This link expires in 15 minutes. Hurry up!</p>
-                """.formatted(resetLink);
+        Context context = new Context();
+        //context.setVariable("userName", userName);
+        context.setVariable("resetLink", resetLink);
+
+        String htmlBody = templateEngine.process("password-recovery", context);
+
 
         Map<String, Object> body = Map.of(
                 "from", fromEmail,
