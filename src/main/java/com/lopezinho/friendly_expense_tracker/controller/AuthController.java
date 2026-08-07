@@ -42,15 +42,15 @@ public class AuthController {
         Optional<User> userOpt = userService.findByEmail(request.getEmail());
 
         //NO USER-EMAIL MATCH WAS FOUND: 401
-        if (userOpt.isEmpty()) return ResponseEntity.status(401).body("Wrong password/email");
+        if (userOpt.isEmpty()) return ResponseEntity.status(401).body(Map.of("error", "Wrong password/email"));
 
         User user = userOpt.get();
 
         //USER NOT VERIFIED
-        if (!user.isEmailVerified()) return ResponseEntity.status(403).body("This account is not verified yet");
+        if (!user.isEmailVerified()) return ResponseEntity.status(403).body(Map.of("error", "This account is not verified yet"));
 
         //GIVEN PASSWORD DOES NOT MATCH WITH HASHED PASSWORD: 401
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) { return ResponseEntity.status(401).body("Wrong password/email"); }
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) return ResponseEntity.status(401).body(Map.of("error", "Wrong password/email"));
 
         //MATCH: GENERATE AND RETURN TOKEN
         String token = jwtService.generateToken(user.getEmail());

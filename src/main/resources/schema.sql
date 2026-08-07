@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS categories (
     type varchar(20) NOT NULL,
     icon varchar(50),
     CONSTRAINT CK_CATEGORY_TYPE CHECK (type = 'EXPENSE' OR type = 'INCOME'),
-    CONSTRAINT UQ_CATEGORY_USER_NAME UNIQUE (user_id, name)
+    CONSTRAINT UQ_CATEGORY_USER_NAME UNIQUE (user_id, name, type)
 );
 
 CREATE TABLE IF NOT EXISTS transactions (

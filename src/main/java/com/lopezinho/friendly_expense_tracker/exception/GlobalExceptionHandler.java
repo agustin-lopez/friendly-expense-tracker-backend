@@ -1,6 +1,5 @@
 package com.lopezinho.friendly_expense_tracker.exception;
 
-import com.lopezinho.friendly_expense_tracker.exception.ExpiredTokenException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +17,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String rootMessage = ex.getRootCause() != null ? ex.getRootCause().getMessage() : "";
+        String normalizedMessage = rootMessage.toLowerCase();
+
+        String userMessage;
+        if (normalizedMessage.contains("uq_category_user_name")) {
+            userMessage = "You're adding a duplicated category!";
+        } else if (normalizedMessage.contains("users_email_key") || normalizedMessage.contains("email")) {
+            userMessage = "This email is already registered";
+        } else {
+            userMessage = "Duplicated data";
+        }
+
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
-                .body(Map.of("error", "Duplicate entry"));
+                .body(Map.of("error", userMessage));
     }
 
     @ExceptionHandler(RuntimeException.class)
