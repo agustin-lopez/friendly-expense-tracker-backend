@@ -78,7 +78,13 @@ public class AuthController {
     @PostMapping("/resend-verification")
     public ResponseEntity<Map<String, String>> resendVerification(@RequestBody ForgotPasswordRequest request) {
         userService.resendVerificationEmail(request.getEmail());
-        return ResponseEntity.ok(Map.of("message", "Si el email existe y no está verificado, te llegará un nuevo link"));
+        return ResponseEntity.ok(Map.of("message", "A verification link will be sent to you"));
+    }
+
+    @PostMapping("/confirm-password-change")
+    public ResponseEntity<Map<String, String>> confirmPasswordChange(@RequestBody Map<String, String> body) {
+        userService.confirmPasswordChange(body.get("token"));
+        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
     }
 
 }

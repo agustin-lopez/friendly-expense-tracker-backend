@@ -71,14 +71,28 @@ public class UserService {
         return category;
     }
 
-    public User changePassword(UUID id, String currentPassword, String newPassword) {
+    public void requestPasswordChange(UUID id, String currentPassword, String newPassword) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) throw new RuntimeException("That's not your current password. Try again!");
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new RuntimeException("Current password is wrong");
+        }
 
-        user.setPasswordHash(passwordEncoder.encode(newPassword));
-        return userRepository.save(user);
+        String hashedNewPassword = passwordEncoder.encode(newPassword);
+        String confirmLink = createToken(user, TokenType.PASSWORD_CHANGE_CONFIRMATION, 15, "/confirm-password-change", hashedNewPassword);
+
+        emailService.sendPasswordChangeConfirmation(user.getEmail(), confirmLink);
+    }
+
+    public void confirmPasswordChange(String token) {
+        TemporaryToken changeToken = validateToken(token, TokenType.PASSWORD_CHANGE_CONFIRMATION);
+
+        User user = changeToken.getUser();
+        user.setPasswordHash(changeToken.getPayload());
+        userRepository.save(user);
+
+        markTokenAsUsed(changeToken);
     }
 
     public void deleteById(UUID id) { userRepository.deleteById(id); }
@@ -101,7 +115,7 @@ public class UserService {
         if (userOpt.isEmpty()) return;
 
         User user = userOpt.get();
-        String resetLink = createToken(user, TokenType.PASSWORD_RESET, 15, "/reset-password");
+        String resetLink = createToken(user, TokenType.PASSWORD_RESET, 15, "/reset-password", null);
         emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
     }
 
@@ -116,7 +130,7 @@ public class UserService {
     }
 
     private void sendVerificationEmail(User user) {
-        String verificationLink = createToken(user, TokenType.EMAIL_VERIFICATION, 30, "/verify-email");
+        String verificationLink = createToken(user, TokenType.EMAIL_VERIFICATION, 30, "/verify-email", null);
         emailService.sendVerificationEmail(user.getEmail(), verificationLink);
     }
 
@@ -136,11 +150,12 @@ public class UserService {
         });
     }
 
-    private String createToken(User user, TokenType type, int expirationMinutes, String frontendPath) {
+    private String createToken(User user, TokenType type, int expirationMinutes, String frontendPath, String payload) {
         TemporaryToken temporaryToken = new TemporaryToken();
         temporaryToken.setUser(user);
         temporaryToken.setType(type);
         temporaryToken.setToken(UUID.randomUUID().toString());
+        temporaryToken.setPayload(payload);
         temporaryToken.setExpiresAt(LocalDateTime.now().plusMinutes(expirationMinutes));
         temporaryTokenRepository.save(temporaryToken);
 

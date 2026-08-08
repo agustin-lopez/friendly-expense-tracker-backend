@@ -32,9 +32,10 @@ CREATE TABLE IF NOT EXISTS temporary_tokens (
     user_id uuid NOT NULL REFERENCES users (id) ON DELETE CASCADE ON UPDATE CASCADE,
     token varchar(255) NOT NULL UNIQUE,
     type varchar(30) NOT NULL,
+    payload varchar(255),
     expires_at timestamp NOT NULL,
     used boolean NOT NULL DEFAULT false,
-    CONSTRAINT CK_TOKEN_TYPE CHECK (type = 'PASSWORD_RESET' OR type = 'EMAIL_VERIFICATION')
+    CONSTRAINT CK_TOKEN_TYPE CHECK (type = 'PASSWORD_RESET' OR type = 'EMAIL_VERIFICATION' OR type = 'PASSWORD_CHANGE_CONFIRMATION')
 );
 
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories (user_id);

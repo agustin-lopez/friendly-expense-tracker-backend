@@ -23,6 +23,9 @@ public class TemporaryToken {
     @Column(nullable = false, length = 30)
     private TokenType type;
 
+    @Column(length = 255)
+    private String payload;
+
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
@@ -46,6 +49,10 @@ public class TemporaryToken {
     public TokenType getType() { return type; }
 
     public void setType(TokenType type) { this.type = type; }
+
+    public String getPayload() { return payload; }
+
+    public void setPayload(String payload) { this.payload = payload; }
 
     public LocalDateTime getExpiresAt() { return expiresAt; }
 

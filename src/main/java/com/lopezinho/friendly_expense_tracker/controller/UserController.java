@@ -12,6 +12,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -50,10 +51,11 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    @PutMapping("/{id}/password")
-    public ResponseEntity<Void> changePassword(@PathVariable UUID id, @RequestBody ChangePasswordRequest request) {
-        userService.changePassword(id, request.getCurrentPassword(), request.getNewPassword());
-        return ResponseEntity.noContent().build();
+    @PutMapping("/me/password/request")
+    public ResponseEntity<Map<String, String>> requestPasswordChange(@RequestBody ChangePasswordRequest request) {
+        User currentUser = userService.getCurrentUser();
+        userService.requestPasswordChange(currentUser.getId(), request.getCurrentPassword(), request.getNewPassword());
+        return ResponseEntity.ok(Map.of("message", "Revisá tu correo para confirmar el cambio de contraseña"));
     }
 
     @PutMapping("/me")
