@@ -43,13 +43,17 @@ public class UserService {
 
     @Transactional
     public User register(User user) {
+        if (userRepository.findByEmail(user.getEmail()) != null) throw new RuntimeException("This email is already registered");
+
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         user.setEmailVerified(false);
-        User savedUser = userRepository.save(user);
+        User savedUser = null;
+        savedUser = userRepository.save(user);
         createDefaultCategories(savedUser);
         sendVerificationEmail(savedUser);
         return savedUser;
     }
+
     private void createDefaultCategories(User user) {
         List<Category> defaults = List.of(
                 buildCategory("Food", CategoryType.EXPENSE, "PepsiThemeMyComputer", user),
@@ -75,14 +79,12 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-            throw new RuntimeException("Current password is wrong");
-        }
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) throw new RuntimeException("Current password is wrong");
 
         String hashedNewPassword = passwordEncoder.encode(newPassword);
         String confirmLink = createToken(user, TokenType.PASSWORD_CHANGE_CONFIRMATION, 15, "/confirm-password-change", hashedNewPassword);
 
-        emailService.sendPasswordChangeConfirmation(user.getEmail(), confirmLink);
+        emailService.sendPasswordChangeConfirmation(user.getEmail(), user.getName(), confirmLink);
     }
 
     public void confirmPasswordChange(String token) {
@@ -116,7 +118,7 @@ public class UserService {
 
         User user = userOpt.get();
         String resetLink = createToken(user, TokenType.PASSWORD_RESET, 15, "/reset-password", null);
-        emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
+        emailService.sendPasswordResetEmail(user.getEmail(), user.getName(), resetLink);
     }
 
     public void resetPassword(String token, String newPassword) {
@@ -131,7 +133,7 @@ public class UserService {
 
     private void sendVerificationEmail(User user) {
         String verificationLink = createToken(user, TokenType.EMAIL_VERIFICATION, 30, "/verify-email", null);
-        emailService.sendVerificationEmail(user.getEmail(), verificationLink);
+        emailService.sendVerificationEmail(user.getEmail(), user.getName(), verificationLink);
     }
 
     public void verifyEmail(String token) {

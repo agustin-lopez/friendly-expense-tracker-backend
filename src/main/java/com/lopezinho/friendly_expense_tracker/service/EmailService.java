@@ -25,17 +25,21 @@ public class EmailService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
+    @Value("${app.title.url}")
+    private String titleLink;
+
     @Autowired
     private TemplateEngine templateEngine;
 
-    public void sendPasswordResetEmail(String toEmail, String resetLink) {
+    public void sendPasswordResetEmail(String toEmail, String userName, String resetLink) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
 
         Context context = new Context();
-        //context.setVariable("userName", userName);
+        context.setVariable("userName", userName);
         context.setVariable("resetLink", resetLink);
+        context.setVariable("imageLink", titleLink);
 
         String htmlBody = templateEngine.process("password-recovery", context);
 
@@ -51,17 +55,17 @@ public class EmailService {
         restTemplate.postForEntity("https://api.resend.com/emails", request, String.class);
     }
 
-    public void sendVerificationEmail(String toEmail, String verificationLink) {
+    public void sendVerificationEmail(String toEmail, String userName, String verificationLink) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
 
-        String htmlBody = """
-            <h2>Email verification</h2>
-            <p>Thank you for signing up!</p>
-            <p><a href="%s">Click this link to activate your account</a></p>
-            <p>It expires in 30 minutes.</p>
-            """.formatted(verificationLink);
+        Context context = new Context();
+        context.setVariable("userName", userName);
+        context.setVariable("verificationLink", verificationLink);
+        context.setVariable("imageLink", titleLink);
+
+        String htmlBody = templateEngine.process("email-verification", context);
 
         Map<String, Object> body = Map.of(
                 "from", fromEmail,
@@ -74,23 +78,22 @@ public class EmailService {
         restTemplate.postForEntity("https://api.resend.com/emails", request, String.class);
     }
 
-    public void sendPasswordChangeConfirmation(String toEmail, String confirmLink) {
+    public void sendPasswordChangeConfirmation(String toEmail, String userName, String confirmLink) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setBearerAuth(apiKey);
 
-        String htmlBody = """
-            <h2>Password update confirmation</h2>
-            <p>You have requested to update your password.</p>
-            <p><a href="%s">Click here to confirm!</a></p>
-            <p>This link expires in 15 minutes.
-            If you haven't requested this, please consider change your current password for a safer one.</p>
-            """.formatted(confirmLink);
+        Context context = new Context();
+        context.setVariable("userName", userName);
+        context.setVariable("confirmLink", confirmLink);
+        context.setVariable("imageLink", titleLink);
+
+        String htmlBody = templateEngine.process("password-update", context);
 
         Map<String, Object> body = Map.of(
                 "from", fromEmail,
                 "to", toEmail,
-                "subject", "Friendly Expense Tracker - Password update confirmation",
+                "subject", "Friendly Expense Tracker - Password update",
                 "html", htmlBody
         );
 
