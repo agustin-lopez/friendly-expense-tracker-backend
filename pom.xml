@@ -105,13 +105,21 @@
 			<version>0.12.6</version>
 			<scope>runtime</scope>
 		</dependency>
-		<!-- JWT -->
+		<!-- /JWT -->
 
-
+		<!--THYMELEAF-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 			<version>4.1.0</version>
+			<scope>compile</scope>
+		</dependency>
+
+		<!--Bucket4j-->
+		<dependency>
+			<groupId>com.bucket4j</groupId>
+			<artifactId>bucket4j_jdk17-core</artifactId>
+			<version>8.19.0</version>
 			<scope>compile</scope>
 		</dependency>
 

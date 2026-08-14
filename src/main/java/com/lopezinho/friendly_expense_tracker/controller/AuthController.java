@@ -6,14 +6,15 @@ import com.lopezinho.friendly_expense_tracker.dto.LoginRequest;
 import com.lopezinho.friendly_expense_tracker.dto.LoginResponse;
 import com.lopezinho.friendly_expense_tracker.model.User;
 import com.lopezinho.friendly_expense_tracker.service.JwtService;
+import com.lopezinho.friendly_expense_tracker.service.RateLimiterService;
 import com.lopezinho.friendly_expense_tracker.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Map;
 import java.util.Optional;
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -22,22 +23,29 @@ public class AuthController {
     private final UserService userService;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
+    private final RateLimiterService rateLimiterService;
 
-    public AuthController(UserService userService, JwtService jwtService, PasswordEncoder passwordEncoder) {
+    public AuthController(UserService userService, JwtService jwtService, PasswordEncoder passwordEncoder, RateLimiterService rateLimiterService) {
         this.userService = userService;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.rateLimiterService = rateLimiterService;
     }
 
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@RequestBody User user, HttpServletRequest httpRequest) {
+        String ip = getClientIp(httpRequest);
+        if (!rateLimiterService.tryConsumeRegister(ip)) return ResponseEntity.status(429).body(Map.of("error", "Too many registration attempts :(. Please, try again in an hour!"));
+
         User saved = userService.register(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+        String ip = getClientIp(httpRequest);
+        if (!rateLimiterService.tryConsumeLogin(ip)) return ResponseEntity.status(429).body(Map.of("error", "Too many login attempts :(. Please, try again in a minute!"));
 
         Optional<User> userOpt = userService.findByEmail(request.getEmail());
 
@@ -55,6 +63,13 @@ public class AuthController {
         //MATCH: GENERATE AND RETURN TOKEN
         String token = jwtService.generateToken(user.getEmail());
         return ResponseEntity.ok(new LoginResponse(token));
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        if (forwardedFor != null && !forwardedFor.isBlank()) return forwardedFor.split(",")[0].trim();
+
+        return request.getRemoteAddr();
     }
 
     @PostMapping("/forgot-password")
