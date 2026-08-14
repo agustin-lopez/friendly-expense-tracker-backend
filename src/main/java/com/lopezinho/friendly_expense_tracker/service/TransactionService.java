@@ -122,4 +122,22 @@ public class TransactionService {
         return new MonthGroupDTO(monthKey, total, transactions);
     }
 
+    public List<Transaction> searchTransactions(UUID userId, String query, String typeFilter) {
+        List<Transaction> all = transactionRepository.findByUserId(userId);
+        String lowerQuery = query.toLowerCase();
+
+        return all.stream()
+                .filter(t -> typeFilter == null || typeFilter.equals("ALL")
+                        || (t.getCategory() != null && t.getCategory().getType().name().equals(typeFilter)))
+                .filter(t -> {
+                    boolean matchesDescription = t.getDescription() != null
+                            && t.getDescription().toLowerCase().contains(lowerQuery);
+                    boolean matchesCategory = t.getCategory() != null
+                            && t.getCategory().getName().toLowerCase().contains(lowerQuery);
+                    return matchesDescription || matchesCategory;
+                })
+                .sorted((a, b) -> b.getTransactionDate().compareTo(a.getTransactionDate()))
+                .toList();
+    }
+
 }

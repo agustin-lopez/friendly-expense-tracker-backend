@@ -83,4 +83,13 @@ public class TransactionController {
         return transactionService.getTransactionsGroupedByMonth(currentUser.getId(), page, size, type);
     }
 
+    @GetMapping("/search")
+    public List<Transaction> search(
+            @RequestParam String query,
+            @RequestParam(required = false) String type
+    ) {
+        User currentUser = userService.getCurrentUser();
+        return transactionService.searchTransactions(currentUser.getId(), query, type);
+    }
+
 }
