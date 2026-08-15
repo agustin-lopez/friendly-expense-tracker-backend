@@ -21,13 +21,14 @@ public class GlobalExceptionHandler {
         String normalizedMessage = rootMessage.toLowerCase();
 
         String userMessage;
-        if (normalizedMessage.contains("uq_category_user_name")) {
+        if (normalizedMessage.contains("uq_category_user_name"))
             userMessage = "You're adding a duplicated category!";
-        } else if (normalizedMessage.contains("users_email_key") || normalizedMessage.contains("email")) {
+        else if (normalizedMessage.contains("users_email_key") || normalizedMessage.contains("email"))
             userMessage = "This email is already registered";
-        } else {
-            userMessage = "Duplicated data";
-        }
+        else if (normalizedMessage.contains("null") && normalizedMessage.contains("name"))
+            userMessage = "Username is required";
+        else
+            userMessage = "Unexpected error";
 
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
@@ -43,11 +44,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationErrors(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new LinkedHashMap<>();
+        String errorMessage = ex.getBindingResult()
+                .getFieldError()
+                .getDefaultMessage();
+
+        /*Map<String, String> errors = new LinkedHashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(fieldError ->
                 errors.put(fieldError.getField(), fieldError.getDefaultMessage())
         );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);*/
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", errorMessage));
     }
 
     @ExceptionHandler(RestClientException.class)

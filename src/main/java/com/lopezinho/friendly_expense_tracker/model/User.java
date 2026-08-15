@@ -2,6 +2,7 @@ package com.lopezinho.friendly_expense_tracker.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
@@ -22,6 +23,7 @@ public class User {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
+    @Size(min = 8, message = "Password must be at least eight characters long")
     @Column(name = "password_hash", nullable = false, length = 255)
     private String passwordHash;
 

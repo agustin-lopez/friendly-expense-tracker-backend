@@ -5,6 +5,7 @@ import com.lopezinho.friendly_expense_tracker.dto.UpdateProfileRequest;
 import com.lopezinho.friendly_expense_tracker.model.User;
 import com.lopezinho.friendly_expense_tracker.service.UserService;
 import jakarta.persistence.Column;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,10 +53,10 @@ public class UserController {
     }
 
     @PutMapping("/me/password/request")
-    public ResponseEntity<Map<String, String>> requestPasswordChange(@RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<Map<String, String>> requestPasswordChange(@Valid @RequestBody ChangePasswordRequest request) {
         User currentUser = userService.getCurrentUser();
         userService.requestPasswordChange(currentUser.getId(), request.getCurrentPassword(), request.getNewPassword());
-        return ResponseEntity.ok(Map.of("message", "Revisá tu correo para confirmar el cambio de contraseña"));
+        return ResponseEntity.ok(Map.of("message", "Please, check your email to confirm the password update"));
     }
 
     @PutMapping("/me")

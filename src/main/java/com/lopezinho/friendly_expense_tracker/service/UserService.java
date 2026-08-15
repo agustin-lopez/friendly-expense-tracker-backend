@@ -43,7 +43,7 @@ public class UserService {
 
     @Transactional
     public User register(User user) {
-        if (userRepository.findByEmail(user.getEmail()) != null) throw new RuntimeException("This email is already registered");
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) throw new RuntimeException("This email is already registered");
 
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         user.setEmailVerified(false);

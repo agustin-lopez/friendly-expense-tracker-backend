@@ -8,6 +8,7 @@ import com.lopezinho.friendly_expense_tracker.model.User;
 import com.lopezinho.friendly_expense_tracker.service.JwtService;
 import com.lopezinho.friendly_expense_tracker.service.RateLimiterService;
 import com.lopezinho.friendly_expense_tracker.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -34,7 +35,7 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user, HttpServletRequest httpRequest) {
+    public ResponseEntity<?> register(@Valid @RequestBody User user, HttpServletRequest httpRequest) {
         String ip = getClientIp(httpRequest);
         if (!rateLimiterService.tryConsumeRegister(ip)) return ResponseEntity.status(429).body(Map.of("error", "Too many registration attempts :(. Please, try again in an hour!"));
 
@@ -79,7 +80,7 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         userService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseEntity.ok(Map.of("message", "Password updated successfully!"));
     }

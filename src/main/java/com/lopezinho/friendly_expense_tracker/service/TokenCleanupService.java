@@ -15,8 +15,5 @@ public class TokenCleanupService {
     }
 
     @Scheduled(cron = "0 0 0 * * *")
-    public void cleanupExpiredTokens() {
-        temporaryTokenRepository.deleteExpiredOrUsedTokens(LocalDateTime.now());
-        System.out.println("Temporary tokens cleanup executed: " + LocalDateTime.now());
-    }
+    public void cleanupExpiredTokens() { temporaryTokenRepository.deleteExpiredOrUsedTokens(LocalDateTime.now()); }
 }
